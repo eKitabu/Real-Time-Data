@@ -25,23 +25,30 @@ if (($handle = fopen($GLOBALS['ACCTS'], "r")) !== FALSE) {
 
         usort($docs, 'sortby_obj_timestap');
 
+        $totalUsage = 0;
         foreach ($docs as $doc) {
             if ($doc->action == 'appOpen') {
                 $start_time = new DateTime($doc->timestamp);
                 $hour = $start_time->format('G');
                 $hours[$hour]++;
+                $totalUsage++;
 //                echo 'event=openApp os=' . $doc->context->os . ' arch=' . $doc->context->arch . " hour=" . $start_time->format('H') . "\n";
             }
         }
     }
     fclose($handle);
 
+    $hour_percents = array();
+    foreach (array_keys($hours) as $hour) {
+        $hour_percents[$hour] = round($hours[$hour] / $totalUsage);
+    }
+
     $arrayOut = array();
     foreach (array_keys($hours) as $hour) {
-        $hour_formatted = str_pad($hour, 2, '0', STR_PAD_LEFT);
+        $hour_formatted = str_pad($hour, 2, '0', STR_PAD_LEFT) . ":00";
         $obj = new stdClass;
         $obj->Hour = $hour_formatted;
-        $obj->Usage = $hours[$hour];
+        $obj->Usage = $hour_percents[$hour];
         $arrayOut[] = $obj;
     }
 
