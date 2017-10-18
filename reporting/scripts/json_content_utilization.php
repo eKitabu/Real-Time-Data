@@ -11,6 +11,13 @@ if (!isCouchOnline()) {
 	exit("CouchDB host at $HOST is not online\n");
 }
 
+/*
+    “book_name”: “Utterback College”,
+    “open_count”: 100,
+    “media_overlay_use”: 22,
+    “tts_use”: 38
+*/
+
 for ($i = 0; $i < 24; $i++) {
     $hours[$i] = 0;
 }
@@ -24,11 +31,9 @@ if (($handle = fopen($GLOBALS['ACCTS'], "r")) !== FALSE) {
         $docs = getAllDocs($db);
         if (!$docs) { continue; }
 
-        usort($docs, 'sortby_obj_timestap');
-
         $totalUsage = 0;
         foreach ($docs as $doc) {
-            if ($doc->action == 'appOpen') {
+            if ($doc->action == 'bookOpen') {
                 $start_time = new DateTime($doc->timestamp);
                 $hour = $start_time->format('G');
                 $hours[$hour]++;

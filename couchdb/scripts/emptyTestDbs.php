@@ -1,23 +1,26 @@
 <?php
 
+date_default_timezone_set("America/Edmonton");
+
+require_once('../../../data/config.php');
 require_once('../../lib/couch_functions.php');
 
-$HOST = 'http://shop.ekitabu.com:5984';
-$UNPW = $argv[1] . ':'  $argv[2];
+$GLOBALS['UNPW'] = 'admin:rm2011go';
 
 if (!isCouchOnline()) {
 	exit("CouchDB host at $HOST is not online\n");
 }
 
-$db = $_GET['d'];
 
-if (!in_array($db, array('device1', 'device2')) {
-	exit("permissioned denied for db: $db");
-}
+if (($handle = fopen($GLOBALS['ACCTS'], "r")) !== FALSE) {
+    while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+        if ($data[0] === 'device') { continue; }
+        $db = $data[0];
 
-$docs = getAllDocs($db);
-if ($docs) {
-	deleteDocs($db, $docs);
-} else {
-	exit("getAllDocs() returned " . print_r($docs, true));
+		$docs = getAllDocs($db);
+		if ($docs) {
+			deleteDocs($db, $docs);
+			echo "purged all activity from db=$db\n";
+		}
+	}
 }
