@@ -40,8 +40,8 @@ if (($handle = fopen($GLOBALS['ACCTS'], "r")) !== FALSE) {
     foreach (array_keys($hours) as $hour) {
         $hour_formatted = str_pad($hour, 2, '0', STR_PAD_LEFT);
         $obj = new stdClass;
-        $obj->"Hour" = $hour_formatted;
-        $obj->"Usage" = $hours[$hour];
+        $obj->Hour = $hour_formatted;
+        $obj->Usage = $hours[$hour];
         $arrayOut[] = $obj;
     }
 

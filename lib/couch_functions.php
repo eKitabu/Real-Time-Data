@@ -127,7 +127,7 @@ function assignUserToDb($user, $db) {
 
 function getAllDocs($db) {
 	$ch = curl_init();
-	curl_setopt($ch, CURLOPT_URL, $GLOBALS['HOST'] . "/$db/_all_docs");
+	curl_setopt($ch, CURLOPT_URL, $GLOBALS['HOST'] . "/$db/_all_docs?include_docs=true");
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($ch, CURLOPT_USERPWD, $GLOBALS['UNPW']);
 	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
@@ -140,7 +140,11 @@ function getAllDocs($db) {
  	curl_close($ch);
 
 	if (property_exists($response, 'total_rows') && $response->total_rows > 0) {
-		return $response->rows;
+		$rows = array();
+		foreach ($response->rows as $item) {
+			$rows[] = $item->doc;
+		}
+		return $rows;
 	} else {
 		return false;
 	}
@@ -186,4 +190,10 @@ function deleteDocs($db, $docs) {
 	}
 
 	curl_close($ch);
+}
+
+function sortby_obj_timestap($a, $b) {
+    $t1 = strtotime($a->timestamp);
+    $t2 = strtotime($b->timestamp);
+    return $t1 - $t2;
 }
