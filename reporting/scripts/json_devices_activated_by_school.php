@@ -19,7 +19,7 @@ if (($handle = fopen($GLOBALS['ACCTS'], "r")) !== FALSE) {
         if ($data[0] === 'device') { continue; }
 
     	$db = $data[0];
-        $school = (strlen($data[2]) ? $data[2] : 'Unknown';
+        $school = (strlen($data[2])) ? $data[2] : 'Unknown';
 
         if (!array_key_exists($school, $schools)) {
             $schools[$school] = 0;
