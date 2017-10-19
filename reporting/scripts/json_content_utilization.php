@@ -23,7 +23,7 @@ if (($handle = fopen($GLOBALS['ACCTS'], "r")) !== FALSE) {
         $docs = getAllDocs($db);
         if (!$docs) { continue; }
 
-        usort($docs, 'sortby_obj_timestap');
+        usort($docs, 'sortby_obj_timestamp');
 
         foreach ($docs as $doc) {
             if ($doc->action == 'bookOpen') {

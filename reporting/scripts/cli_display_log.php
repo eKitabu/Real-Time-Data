@@ -15,7 +15,7 @@ $db = 'test_e4c3';
 $docs = getAllDocs($db);
 if (!$docs) { continue; }
 
-usort($docs, 'sortby_obj_timestap');
+usort($docs, 'sortby_obj_timestamp');
 
 foreach ($docs as $doc) {
     $d = new DateTime($doc->timestamp);

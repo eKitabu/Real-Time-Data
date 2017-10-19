@@ -11,9 +11,6 @@ if (!isCouchOnline()) {
 	exit("CouchDB host at $HOST is not online\n");
 }
 
-for ($i = 0; $i < 24; $i++) {
-    $hours[$i] = 0;
-}
 
 if (($handle = fopen($GLOBALS['ACCTS'], "r")) !== FALSE) {
     $totalUsage = 0;
@@ -30,13 +27,27 @@ if (($handle = fopen($GLOBALS['ACCTS'], "r")) !== FALSE) {
         foreach ($docs as $doc) {
             if ($doc->action == 'appOpen') {
                 $start_time = new DateTime($doc->timestamp);
-                $hour = $start_time->format('G');
-                $hours[$hour]++;
-                $totalUsage++;
+            } elseif ($doc->action == 'appClose') {
+                if (!$start_time) { continue; }
+
+                $start_date = $start_time->format("Y-m-d");
+                $end_time = new DateTime($doc->timestamp);
+                $duration_s = $end_time - $start_time;
+
+                if (array_key_exists($start_date, $usage)) {
+                    $usage[$start_date] += $duration_s;
+                } else {
+                    $usage[$start_date] = $duration_s;
+                }
             }
         }
     }
     fclose($handle);
+
+
+
+
+
 
     $hour_percents = array();
     foreach (array_keys($hours) as $hour) {
