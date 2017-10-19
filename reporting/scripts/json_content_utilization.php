@@ -5,24 +5,16 @@ date_default_timezone_set("America/Edmonton");
 require_once('../../../data/config.php');
 require_once('../../lib/couch_functions.php');
 
-$reportFile = '/home/mocyeg/ekitabu/prod/pub.shop/unicef/reports/json/alltime/usage_tod.json';
+$reportFile = '/home/mocyeg/ekitabu/prod/pub.shop/unicef/reports/json/alltime/content_utilization.json';
 
 if (!isCouchOnline()) {
 	exit("CouchDB host at $HOST is not online\n");
 }
 
-/*
-    “book_name”: “Utterback College”,
-    “open_count”: 100,
-    “media_overlay_use”: 22,
-    “tts_use”: 38
-*/
-
-for ($i = 0; $i < 24; $i++) {
-    $hours[$i] = 0;
-}
 
 if (($handle = fopen($GLOBALS['ACCTS'], "r")) !== FALSE) {
+    $books = array();
+
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
         if ($data[0] === 'device') { continue; }
         $db = $data[0];
@@ -31,30 +23,40 @@ if (($handle = fopen($GLOBALS['ACCTS'], "r")) !== FALSE) {
         $docs = getAllDocs($db);
         if (!$docs) { continue; }
 
-        $totalUsage = 0;
         foreach ($docs as $doc) {
             if ($doc->action == 'bookOpen') {
-                $start_time = new DateTime($doc->timestamp);
-                $hour = $start_time->format('G');
-                $hours[$hour]++;
-                $totalUsage++;
-//                echo 'event=openApp os=' . $doc->context->os . ' arch=' . $doc->context->arch . " hour=" . $start_time->format('H') . "\n";
+                if (array_key_exists($doc->context->title, $books)) {
+                    $books[$doc->context->title]['open_count']++;
+                } else {
+                    $books[$doc->context->title]['open_count'] = 1;
+                    $books[$doc->context->title]['tts_count'] = 0;
+                    $books[$doc->context->title]['media_overlay_count'] = 0;
+                }
+                $lastBookOpen = $doc->context->title;
+            } elseif ($doc->action == 'ttsPlay') {
+                if (array_key_exists('tts_count', $books[$lastBookOpen])) {
+                    $books[$lastBookOpen]['tts_count']++;
+                } else {
+                    $books[$lastBookOpen]['tts_count'] = 1;
+                }
+            } elseif ($doc->action == 'audioPlay') {
+                if (array_key_exists('media_overlay_count', $books[$lastBookOpen])) {
+                    $books[$lastBookOpen]['media_overlay_count']++;
+                } else {
+                    $books[$lastBookOpen]['media_overlay_count'] = 1;
+                }
             }
         }
     }
     fclose($handle);
 
-    $hour_percents = array();
-    foreach (array_keys($hours) as $hour) {
-        $hour_percents[$hour] = round($hours[$hour] / $totalUsage);
-    }
-
     $arrayOut = array();
-    foreach (array_keys($hours) as $hour) {
-        $hour_formatted = str_pad($hour, 2, '0', STR_PAD_LEFT) . ":00";
+    foreach (array_keys($books) as $book) {
         $obj = new stdClass;
-        $obj->Hour = $hour_formatted;
-        $obj->Usage = $hour_percents[$hour];
+        $obj->book_name = $book;
+        $obj->open_count = $books[$book]['open_count'];
+        $obj->media_overlay_count = $books[$book]['media_overlay_count'];
+        $obj->tts_count = $books[$book]['tts_count'];
         $arrayOut[] = $obj;
     }
 
