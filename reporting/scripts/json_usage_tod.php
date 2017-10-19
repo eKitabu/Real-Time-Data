@@ -33,7 +33,6 @@ if (($handle = fopen($GLOBALS['ACCTS'], "r")) !== FALSE) {
                 $hour = $start_time->format('G');
                 $hours[$hour]++;
                 $totalUsage++;
-//                echo 'event=openApp os=' . $doc->context->os . ' arch=' . $doc->context->arch . " hour=" . $start_time->format('H') . "\n";
             }
         }
     }
@@ -41,7 +40,8 @@ if (($handle = fopen($GLOBALS['ACCTS'], "r")) !== FALSE) {
 
     $hour_percents = array();
     foreach (array_keys($hours) as $hour) {
-        $hour_percents[$hour] = round($hours[$hour] / $totalUsage) * 100;
+        $percent = ($hours[$hour] / $totalUsage) * 100;
+        $hour_percents[$hour] = round($percent);
     }
 
     $arrayOut = array();
