@@ -28,7 +28,7 @@ if (($handle = fopen($GLOBALS['ACCTS'], "r")) !== FALSE) {
             if ($doc->action == 'appOpen') {
                 $start_time = new DateTime($doc->timestamp);
             } elseif ($doc->action == 'appClose') {
-                if (!$start_time) { continue; }
+                if (is_set($start_time)) { continue; }
 
                 $start_date = $start_time->format("Y-m-d");
                 $end_time = new DateTime($doc->timestamp);
