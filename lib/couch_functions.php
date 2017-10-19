@@ -171,7 +171,7 @@ function deleteDocs($db, $docs) {
 	$ch = curl_init();
 
 	foreach ($docs as $row) {
-		curl_setopt($ch, CURLOPT_URL, $GLOBALS['HOST'] . "/$db/" . $row->id . "?rev=" . $row->value->rev);
+		curl_setopt($ch, CURLOPT_URL, $GLOBALS['HOST'] . "/$db/" . $row->_id . "?rev=" . $row->_rev);
 		curl_setopt($ch, CURLOPT_USERPWD, $GLOBALS['UNPW']);
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -181,18 +181,13 @@ function deleteDocs($db, $docs) {
 		));
 
 		$response = json_decode(curl_exec($ch));
-
-		if (property_exists($response, 'ok') && $response->ok === true) {
-			echo "deleted " . $row->id . "\n";
-		} else {
-			echo "failed to delete " . $row->id . "\n";
-		}
 	}
 
 	curl_close($ch);
+	return true;
 }
 
-function sortby_obj_timestap($a, $b) {
+function sortby_obj_timestamp($a, $b) {
     $t1 = strtotime($a->timestamp);
     $t2 = strtotime($b->timestamp);
     return $t1 - $t2;
