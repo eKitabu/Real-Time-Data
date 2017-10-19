@@ -5,7 +5,7 @@ date_default_timezone_set("America/Edmonton");
 require_once('../../../data/config.php');
 require_once('../../lib/couch_functions.php');
 
-$reportFile = '/home/mocyeg/ekitabu/prod/pub.shop/unicef/reports/json/alltime/usage_tod.json';
+$reportFile = '/home/mocyeg/ekitabu/prod/pub.shop/unicef/reports/json/alltime/usage_sum.json';
 
 if (!isCouchOnline()) {
 	exit("CouchDB host at $HOST is not online\n");
@@ -13,7 +13,7 @@ if (!isCouchOnline()) {
 
 
 if (($handle = fopen($GLOBALS['ACCTS'], "r")) !== FALSE) {
-    $totalUsage = 0;
+    $usage = array();
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
         if ($data[0] === 'device') { continue; }
         $db = $data[0];
@@ -32,35 +32,33 @@ if (($handle = fopen($GLOBALS['ACCTS'], "r")) !== FALSE) {
 
                 $start_date = $start_time->format("Y-m-d");
                 $end_time = new DateTime($doc->timestamp);
-                $duration_s = $end_time - $start_time;
+                $duration_s = $end_time->getTimestamp() - $start_time->getTimestamp();
+                if ($duration_s < 0) {
+                    unset($start_time);
+                    unset($end_time);
+                    continue;
+                }
 
                 if (array_key_exists($start_date, $usage)) {
                     $usage[$start_date] += $duration_s;
                 } else {
                     $usage[$start_date] = $duration_s;
                 }
+
+                unset($start_time);
             }
         }
     }
     fclose($handle);
 
-
-
-
-
-
-    $hour_percents = array();
-    foreach (array_keys($hours) as $hour) {
-        $percent = ($hours[$hour] / $totalUsage) * 100;
-        $hour_percents[$hour] = round($percent);
-    }
+    ksort($usage);
 
     $arrayOut = array();
-    foreach (array_keys($hours) as $hour) {
-        $hour_formatted = str_pad($hour, 2, '0', STR_PAD_LEFT) . ":00";
+    foreach (array_keys($usage) as $date) {
+        $minutes = round($usage[$date] / 60);
         $obj = new stdClass;
-        $obj->Hour = $hour_formatted;
-        $obj->Usage = $hour_percents[$hour];
+        $obj->Date = $date;
+        $obj->Minutes = $minutes;
         $arrayOut[] = $obj;
     }
 
