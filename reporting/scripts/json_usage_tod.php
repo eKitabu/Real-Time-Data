@@ -16,6 +16,7 @@ for ($i = 0; $i < 24; $i++) {
 }
 
 if (($handle = fopen($GLOBALS['ACCTS'], "r")) !== FALSE) {
+    $totalUsage = 0;
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
         if ($data[0] === 'device') { continue; }
         $db = $data[0];
@@ -26,7 +27,6 @@ if (($handle = fopen($GLOBALS['ACCTS'], "r")) !== FALSE) {
 
         usort($docs, 'sortby_obj_timestap');
 
-        $totalUsage = 0;
         foreach ($docs as $doc) {
             if ($doc->action == 'appOpen') {
                 $start_time = new DateTime($doc->timestamp);
