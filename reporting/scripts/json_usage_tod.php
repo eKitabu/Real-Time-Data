@@ -41,7 +41,7 @@ if (($handle = fopen($GLOBALS['ACCTS'], "r")) !== FALSE) {
 
     $hour_percents = array();
     foreach (array_keys($hours) as $hour) {
-        $hour_percents[$hour] = round($hours[$hour] / $totalUsage);
+        $hour_percents[$hour] = round($hours[$hour] / $totalUsage) * 100;
     }
 
     $arrayOut = array();
